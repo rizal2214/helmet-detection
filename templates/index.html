@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Helmet Detection System</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Arial", sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+
+            .header {
+                background: linear-gradient(135deg, #ff6b6b, #ffa500);
+                color: white;
+                text-align: center;
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2.5em;
+                margin-bottom: 10px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            .header p {
+                font-size: 1.2em;
+                opacity: 0.9;
+            }
+
+            .main-content {
+                padding: 40px 20px;
+            }
+
+            .tabs {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 30px;
+                border-bottom: 2px solid #f0f0f0;
+            }
+
+            .tab {
+                padding: 15px 30px;
+                cursor: pointer;
+                border: none;
+                background: none;
+                font-size: 1.1em;
+                font-weight: 600;
+                color: #666;
+                transition: all 0.3s ease;
+                position: relative;
+            }
+
+            .tab.active {
+                color: #667eea;
+            }
+
+            .tab.active::after {
+                content: "";
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+            }
+
+            .tab-content {
+                display: none;
+                animation: fadeIn 0.5s ease;
+            }
+
+            .tab-content.active {
+                display: block;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .upload-section {
+                text-align: center;
+                padding: 40px;
+                border: 3px dashed #ddd;
+                border-radius: 15px;
+                margin-bottom: 30px;
+                transition: all 0.3s ease;
+            }
+
+            .upload-section:hover {
+                border-color: #667eea;
+                background: rgba(102, 126, 234, 0.05);
+            }
+
+            .upload-section.dragover {
+                border-color: #667eea;
+                background: rgba(102, 126, 234, 0.1);
+            }
+
+            .file-input {
+                display: none;
+            }
+
+            .upload-btn {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+                padding: 15px 30px;
+                border: none;
+                border-radius: 50px;
+                font-size: 1.1em;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            }
+
+            .upload-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            }
+
+            .camera-section {
+                text-align: center;
+            }
+
+            .camera-container {
+                position: relative;
+                max-width: 640px;
+                margin: 0 auto 20px;
+                border-radius: 15px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            }
+
+            #video,
+            #canvas {
+                width: 100%;
+                height: auto;
+                display: block;
+            }
+
+            #canvas {
+                display: none;
+            }
+
+            .camera-controls {
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+
+            .camera-btn {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+                padding: 12px 25px;
+                border: none;
+                border-radius: 50px;
+                font-size: 1em;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            }
+
+            .camera-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            }
+
+            .camera-btn:disabled {
+                background: #ccc;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            .result-container {
+                margin-top: 30px;
+                padding: 25px;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                border-radius: 15px;
+                display: none;
+            }
+
+            .result-container.show {
+                display: block;
+                animation: slideUp 0.5s ease;
+            }
+
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .result-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .result-class {
+                font-size: 2em;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+
+            .with-helmet {
+                color: #28a745;
+            }
+
+            .without-helmet {
+                color: #dc3545;
+            }
+
+            .confidence {
+                font-size: 1.3em;
+                color: #666;
+            }
+
+            .loading {
+                display: none;
+                text-align: center;
+                margin: 20px 0;
+            }
+
+            .spinner {
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #667eea;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 15px;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .error {
+                background: #f8d7da;
+                color: #721c24;
+                padding: 15px;
+                border-radius: 10px;
+                margin: 20px 0;
+                border: 1px solid #f5c6cb;
+            }
+
+            @media (max-width: 768px) {
+                .header h1 {
+                    font-size: 2em;
+                }
+
+                .main-content {
+                    padding: 20px 15px;
+                }
+
+                .tabs {
+                    flex-direction: column;
+                    gap: 10px;
+                }
+
+                .tab {
+                    padding: 12px 20px;
+                }
+
+                .camera-controls {
+                    flex-direction: column;
+                    align-items: center;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Helmet Detection System</h1>
+                <p>AI-Powered Rider Helmet Detection</p>
+            </div>
+
+            <div class="main-content">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('upload')">
+                        📁 Upload Image
+                    </button>
+                    <button class="tab" onclick="switchTab('camera')">
+                        📷 Live Camera
+                    </button>
+                </div>
+
+                <!-- Upload Tab -->
+                <div id="upload-tab" class="tab-content active">
+                    <div class="upload-section" id="uploadSection">
+                        <div style="margin-bottom: 20px">
+                            <h3>📤 Upload an Image</h3>
+                            <p style="color: #666; margin-top: 10px">
+                                Drag and drop an image here or click to select
+                            </p>
+                        </div>
+                        <input
+                            type="file"
+                            id="fileInput"
+                            class="file-input"
+                            accept="image/*"
+                        />
+                        <button
+                            class="upload-btn"
+                            onclick="document.getElementById('fileInput').click()"
+                        >
+                            Choose Image
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Camera Tab -->
+                <div id="camera-tab" class="tab-content">
+                    <div class="camera-section">
+                        <div class="camera-container">
+                            <video id="video" autoplay playsinline></video>
+                            <canvas id="canvas"></canvas>
+                        </div>
+                        <div class="camera-controls">
+                            <button
+                                id="startBtn"
+                                class="camera-btn"
+                                onclick="startCamera()"
+                            >
+                                Start Camera
+                            </button>
+                            <button
+                                id="captureBtn"
+                                class="camera-btn"
+                                onclick="captureImage()"
+                                disabled
+                            >
+                                Capture & Analyze
+                            </button>
+                            <button
+                                id="stopBtn"
+                                class="camera-btn"
+                                onclick="stopCamera()"
+                                disabled
+                            >
+                                Stop Camera
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading indicator -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing image...</p>
+                </div>
+
+                <!-- Results -->
+                <div class="result-container" id="resultContainer">
+                    <div class="result-header">
+                        <div class="result-class" id="resultClass"></div>
+                        <div class="confidence" id="resultConfidence"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentStream = null;
+            let video = document.getElementById("video");
+            let canvas = document.getElementById("canvas");
+            let ctx = canvas.getContext("2d");
+
+            // Tab switching
+            function switchTab(tabName) {
+                // Update tab buttons
+                document
+                    .querySelectorAll(".tab")
+                    .forEach((tab) => tab.classList.remove("active"));
+                event.target.classList.add("active");
+
+                // Update tab content
+                document
+                    .querySelectorAll(".tab-content")
+                    .forEach((content) => content.classList.remove("active"));
+                document
+                    .getElementById(tabName + "-tab")
+                    .classList.add("active");
+
+                // Stop camera when switching away from camera tab
+                if (tabName !== "camera" && currentStream) {
+                    stopCamera();
+                }
+            }
+
+            // File upload handling
+            document
+                .getElementById("fileInput")
+                .addEventListener("change", function (e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        uploadImage(file);
+                    }
+                });
+
+            // Drag and drop functionality
+            const uploadSection = document.getElementById("uploadSection");
+
+            uploadSection.addEventListener("dragover", function (e) {
+                e.preventDefault();
+                uploadSection.classList.add("dragover");
+            });
+
+            uploadSection.addEventListener("dragleave", function (e) {
+                e.preventDefault();
+                uploadSection.classList.remove("dragover");
+            });
+
+            uploadSection.addEventListener("drop", function (e) {
+                e.preventDefault();
+                uploadSection.classList.remove("dragover");
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    uploadImage(files[0]);
+                }
+            });
+
+            // Camera functions
+            async function startCamera() {
+                try {
+                    currentStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            width: { ideal: 640 },
+                            height: { ideal: 480 },
+                        },
+                    });
+                    video.srcObject = currentStream;
+
+                    document.getElementById("startBtn").disabled = true;
+                    document.getElementById("captureBtn").disabled = false;
+                    document.getElementById("stopBtn").disabled = false;
+                } catch (err) {
+                    showError("Error accessing camera: " + err.message);
+                }
+            }
+
+            function stopCamera() {
+                if (currentStream) {
+                    currentStream.getTracks().forEach((track) => track.stop());
+                    currentStream = null;
+                    video.srcObject = null;
+
+                    document.getElementById("startBtn").disabled = false;
+                    document.getElementById("captureBtn").disabled = true;
+                    document.getElementById("stopBtn").disabled = true;
+                }
+            }
+
+            function captureImage() {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+
+                canvas.toBlob(
+                    function (blob) {
+                        // Convert to base64
+                        const reader = new FileReader();
+                        reader.onload = function () {
+                            const base64data = reader.result;
+                            predictCamera(base64data);
+                        };
+                        reader.readAsDataURL(blob);
+                    },
+                    "image/jpeg",
+                    0.8
+                );
+            }
+
+            // API calls
+            async function uploadImage(file) {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                showLoading(true);
+                hideResult();
+
+                try {
+                    const response = await fetch("/predict/upload", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showResult(result);
+                    } else {
+                        showError(result.error || "Error processing image");
+                    }
+                } catch (error) {
+                    showError("Network error: " + error.message);
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            async function predictCamera(imageData) {
+                showLoading(true);
+                hideResult();
+
+                try {
+                    const response = await fetch("/predict/camera", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ image: imageData }),
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showResult(result);
+                    } else {
+                        showError(result.error || "Error processing image");
+                    }
+                } catch (error) {
+                    showError("Network error: " + error.message);
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            // UI functions
+            function showResult(result) {
+                const resultContainer =
+                    document.getElementById("resultContainer");
+                const resultClass = document.getElementById("resultClass");
+                const resultConfidence =
+                    document.getElementById("resultConfidence");
+
+                const className = result.class_name
+                    .replace("_", " ")
+                    .toUpperCase();
+                const confidence = result.confidence;
+
+                resultClass.textContent = className;
+                resultClass.className =
+                    "result-class " +
+                    (result.predicted_class === 1
+                        ? "with-helmet"
+                        : "without-helmet");
+
+                resultConfidence.textContent = `Confidence: ${confidence}%`;
+
+                resultContainer.classList.add("show");
+            }
+
+            function hideResult() {
+                document
+                    .getElementById("resultContainer")
+                    .classList.remove("show");
+            }
+
+            function showLoading(show) {
+                document.getElementById("loading").style.display = show
+                    ? "block"
+                    : "none";
+            }
+
+            function showError(message) {
+                // Remove existing error messages
+                const existingErrors = document.querySelectorAll(".error");
+                existingErrors.forEach((error) => error.remove());
+
+                // Create new error message
+                const errorDiv = document.createElement("div");
+                errorDiv.className = "error";
+                errorDiv.textContent = message;
+
+                // Insert after main content
+                const mainContent = document.querySelector(".main-content");
+                mainContent.appendChild(errorDiv);
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+
+            // Initialize
+            document.addEventListener("DOMContentLoaded", function () {
+                console.log("Helmet Detection System initialized");
+            });
+        </script>
+    </body>
+</html>
