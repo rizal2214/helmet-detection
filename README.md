@@ -11,25 +11,6 @@ Backend Flask untuk model binary image classification yang mendeteksi penggunaan
 -   ✅ Preprocessing gambar otomatis
 -   ✅ Confidence score untuk setiap prediksi
 
-## Struktur Project
-
-helmet-detection-flask/
-├── app.py
-├── model/
-│ ├── base_model.keras
-│ ├── best_model.keras
-│ ├── callback_augmentation_model.keras
-│ └── helmet_detection_model.keras
-├── static/
-├── templates/
-│ └── index.html
-├── uploads/
-├── .gitignore
-├── .python-version
-├── Procfile
-├── README.md
-└── requirements.txt
-
 ## Instalasi
 
 ### 1. Clone atau Download Project
